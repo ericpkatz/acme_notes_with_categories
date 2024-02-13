@@ -50,6 +50,22 @@ app.post('/api/notes', async(req, res, next)=> {
     }
 });
 
+app.put('/api/notes/:id', async(req, res, next)=> {
+    try {
+        const SQL = `
+            UPDATE notes
+            SET txt=$1, category_id=$2
+            WHERE id = $3
+            RETURNING *
+        `;
+        const response = await client.query(SQL, [req.body.txt, req.body.category_id, req.params.id]);
+        res.send(response.rows[0]);
+    }
+    catch(ex){
+        next(ex);
+    }
+});
+
 app.get('/api/categories', async(req, res, next)=> {
     try {
         const SQL = `
@@ -107,15 +123,16 @@ const init = async()=> {
     await client.query(SQL);
     console.log('data seeded');
     const port = process.env.PORT || 3000;
-    app.listen(port, ()=> console.log(`listening on port ${port}`));
-    
+    app.listen(port, ()=> {
+    console.log(`listening on port ${port}`)
     console.log('some curl commands to test');
     console.log('curl localhost:8080/api/notes');
     console.log('curl localhost:8080/api/categories');
     console.log('curl localhost:8080/api/notes/1 -X DELETE');
-    console.log(`
-        curl localhost:8080/api/notes -X POST -d '{"txt": "nu note", "category_id": 1}' -H 'Content-Type:application/json'
-    `);
+    console.log(`curl localhost:8080/api/notes -X POST -d '{"txt": "nu note", "category_id": 1}' -H 'Content-Type:application/json'`);
+    console.log(`curl localhost:8080/api/notes/1 -X PUT -d '{"txt": "updated note", "category_id": 1}' -H 'Content-Type:application/json'`);
+    });
+    
     
 };
 
