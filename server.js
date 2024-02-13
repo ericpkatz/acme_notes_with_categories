@@ -18,6 +18,21 @@ app.get('/api/notes', async(req, res, next)=> {
     }
 });
 
+app.delete('/api/notes/:id', async(req, res, next)=> {
+    try {
+        const SQL = `
+            DELETE FROM notes
+            WHERE id = $1
+        `;
+        await client.query(SQL, [req.params.id]);
+        res.sendStatus(204);
+        
+    }
+    catch(ex){
+        next(ex);
+    }
+});
+
 app.get('/api/categories', async(req, res, next)=> {
     try {
         const SQL = `
@@ -31,6 +46,12 @@ app.get('/api/categories', async(req, res, next)=> {
     catch(ex){
         next(ex);
     }
+});
+
+app.use((err, req, res, next)=> {
+    console.log(err);
+    res.status(err.status || 500).send({error: err.message || err});
+    
 });
 
 const init = async()=> {
@@ -74,6 +95,7 @@ const init = async()=> {
     console.log('some curl commands to test');
     console.log('curl localhost:8080/api/notes');
     console.log('curl localhost:8080/api/categories');
+    console.log('curl localhost:8080/api/notes/1 -X DELETE');
     
 };
 
