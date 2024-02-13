@@ -1,5 +1,37 @@
 const pg = require('pg');
 const client = new pg.Client(process.env.DATABASE_URL || 'postgres://localhost/acme_notes_v2');
+const express = require('express');
+const app = express();
+
+app.get('/api/notes', async(req, res, next)=> {
+    try {
+        const SQL = `
+            SELECT *
+            FROM notes
+        `;
+        const response = await client.query(SQL);
+        res.send(response.rows);
+        
+    }
+    catch(ex){
+        next(ex);
+    }
+});
+
+app.get('/api/categories', async(req, res, next)=> {
+    try {
+        const SQL = `
+            SELECT *
+            FROM categories
+        `;
+        const response = await client.query(SQL);
+        res.send(response.rows);
+        
+    }
+    catch(ex){
+        next(ex);
+    }
+});
 
 const init = async()=> {
     await client.connect();
@@ -36,6 +68,12 @@ const init = async()=> {
     `;
     await client.query(SQL);
     console.log('data seeded');
+    const port = process.env.PORT || 3000;
+    app.listen(port, ()=> console.log(`listening on port ${port}`));
+    
+    console.log('some curl commands to test');
+    console.log('curl localhost:8080/api/notes');
+    console.log('curl localhost:8080/api/categories');
     
 };
 
